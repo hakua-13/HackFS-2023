@@ -1,13 +1,11 @@
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
-import { getAddress } from '../../hooks/useUserOp';
 import { MUMBAI_RPC_URL, POLYGONSCAN_URL } from '../../utils/Contents';
-import { shortAddress } from '../../utils/ethereum';
-import { FactoryCreated } from '../../utils/types';
+import { ManagedAccount } from '../../utils/types';
 import SendModal from '../common/SendModal';
 
 interface Props {
-    factoryCreated: FactoryCreated;
+    managedAccount: ManagedAccount;
     setIsLoading: (arg0: boolean) => void;
     currentAddress: string;
     addStake: (arg0: string, arg1: string) => void;
@@ -18,10 +16,9 @@ interface Props {
  * tableRows
  */
 const TableRow = (porps: Props) => {
-    const [address, setAddress] = useState('');
     const [balance, setBalance] = useState('0');
 
-    const factoryCreated = porps.factoryCreated;
+    const managedAccount = porps.managedAccount;
     const setIsLoading = porps.setIsLoading;
     const currentAddress = porps.currentAddress;
     const addStake = porps.addStake;
@@ -29,12 +26,9 @@ const TableRow = (porps: Props) => {
 
     /**
      * get ContractWallet's balance method
-     * @param factoryAddress
+     * @param contractWalletAddress
      */
-    const getBalance = async (factoryAddress: string) => {         
-        const contractWalletAddress = await getAddress(factoryAddress);
-        setAddress(contractWalletAddress);
-
+    const getBalance = async (contractWalletAddress: string) => {
         // 残高を取得する。
         const provider = new ethers.providers.JsonRpcProvider(MUMBAI_RPC_URL);
         const getBalancePromise = await provider.getBalance(contractWalletAddress);
@@ -50,7 +44,7 @@ const TableRow = (porps: Props) => {
     const addStakeETH = async () => {
         try {
             setIsLoading(true);
-            await addStake(currentAddress, factoryCreated.factoryAddress);
+            await addStake(currentAddress, managedAccount.contractWalletAddress);
             alert('send sucess!!!');
             setIsLoading(false);
         } catch(err) {
@@ -65,30 +59,29 @@ const TableRow = (porps: Props) => {
          * 初期化メソッド
          */
         const init = async() => { 
-            await getAddress(factoryCreated.factoryAddress);
-            await getBalance(factoryCreated.factoryAddress);
+            await getBalance(managedAccount.contractWalletAddress);
         };
         init();
     });
 
     return (
-        <tr key={factoryCreated.factoryId} className="border-b border-slate-300">
+        <tr key={managedAccount.id} className="border-b border-slate-300">
             <td className='px-5 py-5 border-b border-gray-200 bg-white text-sm'>
-                {factoryCreated.factoryId}
+                {managedAccount.id}
+            </td>
+            <td className='px5 py-5 borrder-b border-gray-200 bg-white text-sm'>
+                {managedAccount.name}
             </td>
             <td className='px-5 py-5 border-b border-gray-200 bg-white text-sm underline underline-offset-4'>
-                <a href={POLYGONSCAN_URL + factoryCreated.factoryAddress}>
-                    {shortAddress(factoryCreated.factoryAddress)}
+                <a href={POLYGONSCAN_URL + managedAccount.contractWalletAddress}>
+                    {managedAccount.contractWalletAddress}
                 </a>
-            </td>
-            <td className='px-5 py-5 border-b border-gray-200 bg-white text-sm underline underline-offset-4'>
-                {address}
             </td>
             <td className='px-5 py-5 border-b border-gray-200 bg-white text-sm'>
                 {balance}
             </td>
             <td className='px-5 py-5 border-b border-gray-200 bg-white text-sm'>
-                <SendModal address={address} setIsLoading={setIsLoading} />
+                <SendModal address={managedAccount.contractWalletAddress} setIsLoading={setIsLoading} />
             </td>
             <td className='px-5 py-5 border-b border-gray-200 bg-white text-sm' >
                 <button 

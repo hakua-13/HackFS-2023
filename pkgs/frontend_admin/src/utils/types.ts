@@ -3,9 +3,10 @@ export interface CLIOpts {
     withPM: boolean;
 }
 
-export type FactoryCreated = {
-  factoryId: string;
-  factoryAddress: string;
+export type ManagedAccount = {
+  id: string;
+  contractWalletAddress: string;
+  name: string;
 }
 
 export type Tx = {
